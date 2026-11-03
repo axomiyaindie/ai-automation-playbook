@@ -1,0 +1,53 @@
+﻿{
+  "name": "Lead Scraper & Enricher",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "niche", "value": "B2B SaaS in India" },
+            { "name": "role", "value": "Founder, Head of Growth" }
+          ]
+        }
+      },
+      "name": "ICP Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You score leads against an ICP. Return JSON: {score, reason, opener}. Opener must be 1 sentence, specific, non-salesy."
+            },
+            {
+              "role": "user",
+              "content": "ICP: {{ $json.niche }} / {{ $json.role }}. Lead: {{ $json.lead }}"
+            }
+          ]
+        }
+      },
+      "name": "Score Lead",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": { "main": [[{ "node": "ICP Config", "type": "main", "index": 0 }]] },
+    "ICP Config": { "main": [[{ "node": "Score Lead", "type": "main", "index": 0 }]] }
+  },
+  "settings": {},
+  "active": false
+}

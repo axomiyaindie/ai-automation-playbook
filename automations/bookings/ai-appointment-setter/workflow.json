@@ -1,0 +1,56 @@
+﻿{
+  "name": "AI Appointment Setter",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "appointment",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "You are a booking assistant. Ask up to 3 qualifying questions, then propose 2-3 slots. Be concise and friendly."
+            },
+            {
+              "role": "user",
+              "content": "={{ $json.body.message }}"
+            }
+          ]
+        }
+      },
+      "name": "Qualify",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.6,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": "primary",
+        "timeMin": "={{ $now.toISO() }}",
+        "timeMax": "={{ $now.plus(7, '\''days'\'').toISO() }}",
+        "options": {}
+      },
+      "name": "Check Calendar",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Qualify", "type": "main", "index": 0 }]] },
+    "Qualify": { "main": [[{ "node": "Check Calendar", "type": "main", "index": 0 }]] }
+  },
+  "settings": {},
+  "active": false
+}
